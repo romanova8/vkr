@@ -1,0 +1,68 @@
+##############################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+##############################################################################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataservice
+spec:
+  selector:
+      matchLabels:
+        name: dataservice-deployment
+        version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: dataservice-deployment
+        version: v1
+    spec:
+      containers:
+        - name: dataservice
+          image: maxshapiro32/examplehealthanalyticsdata
+          imagePullPolicy: Always
+          resources:
+                limits:
+                  cpu: 200m
+                  memory: 500Mi
+                requests:
+                  cpu: 100m
+                  memory: 200Mi
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HOST_IP
+              value: <IP_OR_SUBDOMAIN>
+            - name: SCHEME
+              value: <SCHEME>
+            - name: MAPBOX_ACCESS_TOKEN
+              value: pk.eyJ1Ijoicm9tYW5vdmE3MyIsImEiOiJja21naDA0a3QwMzY1MzFtc3FqZDlvdm8yIn0.2wkiXJbKQmhTZI309iFS6Q
+            - name: DATA_SOURCE_API
+              value: <DATA_SOURCE_API>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dataservice-service
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 32000
+      name: http
+  type: NodePort
+  selector:
+    name: dataservice-deployment
